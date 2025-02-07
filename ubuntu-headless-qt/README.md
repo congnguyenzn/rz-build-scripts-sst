@@ -74,12 +74,11 @@ ubuntu-headless-qt/
 │   ├── 05_create_wic.sh
 │   ├── 06_install_gstreamer.sh
 │   ├── 07_install_weston.sh
-│   └── 08_yocto_source.sh
+│   ├── 08_yocto_source.sh
+│   └── 09_yocto_working.sh
 ├── jq-linux-amd64
 ├── main_script.sh
 ├── patches
-│   ├── meta-renesas
-│   │   └── 0001-meta-renesas-support-ubuntu-distro-dunfell.patch
 │   ├── meta-summit-radio
 │   │   ├── 0001-rzsbc-summit-radio-pre-3.4-support-eSDK-build.patch
 │   │   └── 0002-rzsbc-summit-radio-pre-3.4-enable-usb-bt-support.patch
@@ -90,7 +89,7 @@ ubuntu-headless-qt/
     ├── apt_install_base.sh
     └── set_root_password.sh
 
-7 directories, 21 files
+6 directories, 21 files
 ```
 
 **Output folder outline:**
@@ -110,7 +109,8 @@ ubuntu-headless-qt/
 │   ├── 05_create_wic.sh
 │   ├── 06_install_gstreamer.sh
 │   ├── 07_install_weston.sh
-│   └── 08_yocto_source.sh
+│   ├── 08_yocto_source.sh
+│   └── 09_yocto_working.sh
 |-- main_script.sh                          <---- Main execution
 |-- qt_rootfs_source
 |-- rootfs
@@ -118,7 +118,9 @@ ubuntu-headless-qt/
 |-- script
 |   |-- apt_install_base.sh
 |   `-- set_root_password.sh
-|-- ubuntu-base-24.04.01-base-arm64.tar.gz
+`-- ubuntu-base-24.04.01-base-arm64.tar.gz
+
+ubuntu-headless-qt/yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images
 |-- ubuntu-image-qt-rzpi.wic                <---- Output WIC
 `-- ubuntu-image-qt-rzpi.wic.tar.gz         <---- Output compressed WIC
 ```
