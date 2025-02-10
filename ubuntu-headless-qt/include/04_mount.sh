@@ -8,7 +8,7 @@
 # Define global path
 WORK_DIR=$(pwd)
 ROOTFS="./rootfs"
-SCRIPT_PATH="./script"
+SCRIPT_PATH="./script/ubuntu_core"
 
 # 1. mount the ubuntu filesystem using ch-mount.sh.
 function mount_chroot() {
@@ -49,7 +49,7 @@ function umount_chroot() {
 
 # 3. run many script
 chroot_run_list_script() {
-    local script_dir="/script" 
+    local script_dir="/script/ubuntu_core" 
     local scripts=("$@")    
 
     # Create command file script
@@ -71,8 +71,8 @@ chroot_run_list_script() {
 
 # Function check_and_copy_script_folder
 copy_script() {
-    local input_folder="./script"
-    local destination="./rootfs/script"
+    local input_folder="./script/ubuntu_core"
+    local destination="./rootfs/script/ubuntu_core"
 
     # Check input script
     if [[ ! -e $input_folder/$1 ]]; then
@@ -109,7 +109,7 @@ chroot_run_1_script() {
     fi
 
     mount_chroot
-    local script_dir="/script" 
+    local script_dir="/script/ubuntu_core" 
     local scripts=("$@")    
 
     # Create command file script
@@ -128,11 +128,11 @@ chroot_run_1_script() {
     return 0
 }
 
-# Remove /script
+# Remove /script/ubuntu_core
 chroot_rm_script() {
     trap 'echo "Caught Ctrl+C, running umount_chroot..."; umount_chroot; exit 1' SIGINT
     mount_chroot
-    local script_dir="/script" 
+    local script_dir="/script/ubuntu_core" 
 
     # Create target folder
     if [[ -d "$script_dir" ]]; then
@@ -160,7 +160,7 @@ chroot_rm_script() {
 
 # Package file rootfs:
 function package_rootfs() {
-    echo "Removing /script ..."
+    echo "Removing /script/ubuntu_core ..."
     chroot_rm_script
     echo "Packaging rootfs..."
 
