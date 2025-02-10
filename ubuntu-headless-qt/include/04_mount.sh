@@ -85,7 +85,7 @@ copy_script() {
     # Create target folder
     if [[ ! -d "$destination" ]]; then
         echo "Directory $destination does not exist. Creating it..."
-        mkdir "$destination"
+        mkdir -p "$destination"
         if [[ $? -ne 0 ]]; then
             echo "Failed to create directory $destination."
             return 1
