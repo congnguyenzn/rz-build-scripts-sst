@@ -14,9 +14,9 @@ source include/02_prepare_rootfs_qt.sh
 source include/03_prepare_conf.sh
 source include/04_mount.sh
 source include/05_create_wic.sh
-source include/06_install_gstreamer.sh
-source include/07_install_weston.sh
-source include/09_yocto_working.sh
+source include/common/install_gstreamer.sh
+source include/common/install_weston.sh
+source include/common/yocto_working.sh
 
 # main function
 function main(){

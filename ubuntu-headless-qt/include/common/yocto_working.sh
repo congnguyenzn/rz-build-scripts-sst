@@ -6,7 +6,7 @@
 # This function help main script can build yocto
 function build_yocto() {
     # Get source yocto
-    su -c "bash -c 'source include/08_yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" $MAIN_USER
+    su -c "bash -c 'source include/common/yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" $MAIN_USER
 
     # rename to meta-renesas
     if [ -d "yocto_rzsbc_board/meta-renesas-sst" ]; then
@@ -30,7 +30,7 @@ function build_yocto() {
     # Loop until we find the output file
     while [ -z "$result" ]; do
         # Run bitbake
-        su -c "bash -c 'source include/08_yocto_source.sh; cd yocto_rzsbc_board ; setup_conf; \
+        su -c "bash -c 'source include/common/yocto_source.sh; cd yocto_rzsbc_board ; setup_conf; \
         MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
 
         # Check the output
