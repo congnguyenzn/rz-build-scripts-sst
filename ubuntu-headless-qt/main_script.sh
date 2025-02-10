@@ -18,8 +18,8 @@ source include/common/install_gstreamer.sh
 source include/common/install_weston.sh
 source include/common/yocto_working.sh
 
-# main function
-function main(){
+# main function for ubuntu core
+function main_ubuntu_core(){
     MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
     # Recheck user for yocto build
     if [ -n "$MAIN_USER" ]; then
@@ -126,5 +126,15 @@ function main(){
     fi
 }
 
+# Set the default build type to Ubuntu Core
+UBUNTU_TYPE="${UBUNTU_TYPE:=CORE}"
+
 # call main
-main
+case "$UBUNTU_TYPE" in
+    CORE)
+        main_ubuntu_core
+        ;;
+    *)
+        echo "Unknown UBUNTU_TYPE: $UBUNTU_TYPE. Please set it to CORE or another supported type in config.ini."
+        ;;
+esac
