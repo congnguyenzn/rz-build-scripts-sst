@@ -8,12 +8,12 @@
 
 # include
 source config.ini
-source include/00_prepare_env.sh
-source include/01_prepare_ubuntu_base.sh
-source include/02_prepare_rootfs_qt.sh
-source include/03_prepare_conf.sh
-source include/04_mount.sh
-source include/05_create_wic.sh
+source include/ubuntu_core/prepare_env.sh
+source include/ubuntu_core/prepare_ubuntu_base.sh
+source include/ubuntu_core/prepare_rootfs_qt.sh
+source include/ubuntu_core/prepare_conf.sh
+source include/ubuntu_core/mount.sh
+source include/ubuntu_core/create_wic.sh
 source include/common/install_gstreamer.sh
 source include/common/install_weston.sh
 source include/common/yocto_working.sh

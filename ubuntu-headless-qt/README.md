@@ -30,6 +30,7 @@ Several common methods for building embedded file systems include busybox, yocto
 Before running the build script, please ensure that this source belongs to a regular user (not root or a privileged user).
 
 The `config.ini` file is used for configuring the script that builds an Ubuntu image for ARM systems. It includes essential parameters for partition sizes, the Ubuntu base file, and other configurations needed to create the rootfs and wic image. Here are the parameters that need to be configured before starting the script:
+- **UBUNTU_TYPE**: Type of target Ubuntu. Available types are "**CORE**" and "**LXDE**".
 - **BOOT_SIZE_MB**: Size of the boot partition in MB. It should be larger than 100MB.
 - **ROOTFS_SPACE**: Additional space for the rootfs partition in MB.
 - **UBUNTU_BASE_FILE_NAME**: The file name of the Ubuntu base that will be downloaded.
