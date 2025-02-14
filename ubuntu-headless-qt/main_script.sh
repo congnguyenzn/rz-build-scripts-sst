@@ -8,15 +8,25 @@
 
 # include
 source config.ini
-source include/ubuntu_core/prepare_env.sh
-source include/ubuntu_core/prepare_ubuntu_base.sh
-source include/ubuntu_core/prepare_rootfs_qt.sh
-source include/ubuntu_core/prepare_conf.sh
-source include/ubuntu_core/mount.sh
-source include/ubuntu_core/create_wic.sh
+if [ "$UBUNTU_TYPE" == "CORE" ]; then
+    source include/ubuntu_core/prepare_env.sh
+    source include/ubuntu_core/prepare_rootfs_qt.sh
+    source include/ubuntu_core/prepare_conf.sh
+    source include/ubuntu_core/mount.sh
+    source include/ubuntu_core/create_wic.sh
+elif [ "$UBUNTU_TYPE" == "LXDE" ]; then
+    source include/ubuntu_lxde/prepare_rootfs_qt.sh
+    source include/ubuntu_lxde/prepare_conf.sh
+    source include/ubuntu_lxde/mount.sh
+    source include/ubuntu_lxde/create_swap.sh
+else
+    echo "UBUNTU_TYPE is not correct. Please choose the correct one in config.ini."
+    exit 1
+fi
 source include/common/install_gstreamer.sh
 source include/common/install_weston.sh
 source include/common/yocto_working.sh
+source include/common/prepare_ubuntu_base.sh
 
 # main function for ubuntu core
 function main_ubuntu_core(){
@@ -133,6 +143,9 @@ UBUNTU_TYPE="${UBUNTU_TYPE:=CORE}"
 case "$UBUNTU_TYPE" in
     CORE)
         main_ubuntu_core
+        ;;
+    LXDE)
+        main_ubuntu_lxde
         ;;
     *)
         echo "Unknown UBUNTU_TYPE: $UBUNTU_TYPE. Please set it to CORE or another supported type in config.ini."
