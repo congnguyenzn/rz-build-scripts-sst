@@ -653,4 +653,3 @@ output() {
 	echo "Finished collecting the rz yocto output for RZ SBC board"
 	echo "======================================================================"
 }
-
