@@ -5,7 +5,7 @@
 
 # Set LC_ALL to 'C' to enforce a standard POSIX locale.
 export LC_ALL=C
-
+export DEBIAN_FRONTEND=noninteractive
 # Chmod /tmp
 chmod 777 /tmp
 

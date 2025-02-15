@@ -108,7 +108,7 @@ copy_file_conf() {
     fi
 
     # Copy the file to the target folder
-    cp "${WORK_DIR}/config/${file_name}" "${target_folder}"
+    cp "${WORK_DIR}/config/ubuntu_lxde/${file_name}" "${target_folder}"
     if [[ $? -ne 0 ]]; then
         echo "Failed to copy file ${file_name} to ${target_folder}."
         return 1
