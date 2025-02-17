@@ -17,7 +17,7 @@ USERNAME="rzpi"
 PASSWORD="1"
 
 # Check if user already exists then don't create it
-if id "$USERNAME" &>/dev/null; then
+if id "$USERNAME" > /dev/null 2>&1; then
     echo "User '$USERNAME' already exists."
 else
     # Create user and set password
