@@ -12,7 +12,7 @@
 # Arguments:
 #   None
 #######################################
-function mount_chroot() {
+mount_chroot() {
     echo "Mounting chroot environment..."
 
     # Change dir WORK_DIR
@@ -37,7 +37,7 @@ function mount_chroot() {
 # Arguments:
 #   None
 #######################################
-function umount_chroot() {
+umount_chroot() {
     echo "Unmounting chroot environment..."
 
     # Change dir WORK_DIR
@@ -65,23 +65,23 @@ function umount_chroot() {
 #######################################
 copy_script() {
     # Define local variables
-    local input_folder="./script/ubuntu_lxde"
-    local destination="./rootfs/script/ubuntu_lxde"
+    input_folder="./script/ubuntu_lxde"
+    destination="./rootfs/script/ubuntu_lxde"
 
     # Check input script
-    if [[ ! -e $input_folder/$1 ]]; then
+    if [ ! -e $input_folder/"$1" ]; then
         echo "File $input_folder/$1 not found"
         return 1
     fi
 
     # Change permission
-    chmod a+x $input_folder/$1
+    chmod a+x $input_folder/"$1"
 
     # Create target folder
-    if [[ ! -d "$destination" ]]; then
+    if [ ! -d "$destination" ]; then
         echo "Directory $destination does not exist. Creating it..."
         mkdir -p "$destination"
-        if [[ $? -ne 0 ]]; then
+        if [ $? -ne 0 ]; then
             echo "Failed to create directory $destination."
             return 1
         fi
@@ -104,20 +104,18 @@ copy_script() {
 #######################################
 chroot_run_1_script() {
     # Copy script to rootfs
-    copy_script $1
-    if [[ $? -eq 1 ]]; then
+    copy_script "$1"
+    if [ $? -eq 1 ]; then
         echo "copy_script $1 failed."
         exit 1
     fi
 
     # Mount chroot
     mount_chroot
-    local script_dir="/script/ubuntu_lxde"
-    local scripts=("$@")
+    script_dir="/script/ubuntu_lxde"
 
     # Create command file script
-    local script_commands=""
-    script_commands+="$script_dir/$1; "
+    script_commands="$script_dir/$1; "
 
     # Chroot and excute script
     sudo chroot ./rootfs /bin/bash -c "
@@ -140,7 +138,7 @@ chroot_run_1_script() {
 # Arguments:
 #   None
 #######################################
-function package_rootfs() {
+package_rootfs() {
     echo "Packaging rootfs..."
 
     # Change dir WORK_DIR
@@ -148,13 +146,13 @@ function package_rootfs() {
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
     # Check folder rootfs exist
-    if [[ ! -d "${OUTPUT_ROOTFS}" ]]; then
+    if [ ! -d "${OUTPUT_ROOTFS}" ]; then
         echo "Directory rootfs not found"
         return 1
     fi
 
     # Check and remove old rootfs file if exist
-    if [[ -e "${OUTPUT_ROOTFS}.tar.bz2" ]]; then
+    if [ -e "${OUTPUT_ROOTFS}.tar.bz2" ]; then
         rm "${OUTPUT_ROOTFS}.tar.bz2"
     fi
 

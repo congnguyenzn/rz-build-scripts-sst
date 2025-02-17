@@ -14,7 +14,7 @@
 # Step 6: Create file tar.gz from .wic file
 # --------------------------------------------------------------------------#
 
-function create_wic() {
+create_wic() {
     sudo apt-get update
     sudo apt-get install -y parted multipath-tools kpartx dosfstools e2fsprogs
 
@@ -35,7 +35,7 @@ function create_wic() {
     # Step 1: Create blank *.wic
     echo "Creating blank WIC file : ${TOTAL_SIZE_MB}MB..."
     dd if=/dev/zero of="$OUTPUT_WIC" bs=1M count="$TOTAL_SIZE_MB" status=progress
-    if [[ $? -eq 1 ]]; then
+    if [ $? -eq 1 ]; then
         echo "Create WIC failed."
         return 1
     fi
