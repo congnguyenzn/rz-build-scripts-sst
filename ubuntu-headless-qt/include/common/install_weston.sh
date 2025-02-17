@@ -1,8 +1,8 @@
 #!/bin/bash 
 
 install_weston() {
-    if [ -n $1 ]; then
-        if [ ! -e $1 ]; then
+    if [ -n "$1" ]; then
+        if [ ! -e "$1" ]; then
             echo "ubuntu rootfs doesn't exist"
             return 1
         fi
@@ -13,8 +13,8 @@ install_weston() {
         work_dir='rootfs'
     fi
 
-    if [ -n $2 ]; then
-        if [ ! -e $2 ]; then
+    if [ -n "$2" ]; then
+        if [ ! -e "$2" ]; then
             echo "qt rootfs source doesn't exist"
             return 1
         fi

@@ -4,9 +4,9 @@
 # --------------------------------------------------------------------------#
 
 # This function help main script can build yocto
-function build_yocto() {
+build_yocto() {
     # Get source yocto
-    su -c "bash -c 'source include/common/yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" $MAIN_USER
+    su -c "bash -c 'source include/common/yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" "$MAIN_USER"
 
     # rename to meta-renesas
     if [ -d "yocto_rzsbc_board/meta-renesas-sst" ]; then
@@ -31,7 +31,7 @@ function build_yocto() {
     while [ -z "$result" ]; do
         # Run bitbake
         su -c "bash -c 'source include/common/yocto_source.sh; cd yocto_rzsbc_board ; setup_conf; \
-        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" $MAIN_USER
+        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" "$MAIN_USER"
 
         # Check the output
         result=$(find yocto_rzsbc_board/build/tmp/deploy/ -name '*.tar.bz2' -exec cp {} ./core-image-qt-rzpi.tar.bz2 \; && echo "File copied successfully.")
@@ -46,7 +46,7 @@ function build_yocto() {
 }
 
 # This function help main script bring wic file to yocto output's directory
-function move_ubuntu_to_yocto_output(){
+move_ubuntu_to_yocto_output(){
     # Check output folder availability
     DIR="yocto_rzsbc_board/build/tmp/deploy/images/rzpi/target/images"
     if [ -d "$DIR" ]; then

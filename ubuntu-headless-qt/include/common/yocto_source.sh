@@ -20,7 +20,7 @@ SUFFIX_TAR=".tar.gz"
 LSB_ID_OK="Ubuntu"
 LSB_REL_OK="20.04"
 
-TOP_DIR=`pwd`
+TOP_DIR=$(pwd)
 JQ="$TOP_DIR/jq-linux-amd64"
 PATCH_FILE="$TOP_DIR/git_patch.json"
 
@@ -35,7 +35,7 @@ PATCH_FILE="$TOP_DIR/git_patch.json"
 #  - renesas-quickboot-cli
 #  - renesas-quickboot-wayland
 # Default is core-image-qt
-: ${IMAGE:=core-image-qt}
+: ${IMAGE:="core-image-qt"}
 
 # ------------------------------------------------------------------------------
 
@@ -84,17 +84,15 @@ clean_repository() {
 }
 
 apply_patches() {
-	local key="$1"
+	key="$1"
 
 	echo "Applying patches for $key"
 
 	# Get the list of patches from the JSON file
-	local patch_list
-	patch_list=$("${JQ}" -r --arg key "$key" '.[$key].patches[]?' "$PATCH_FILE")
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to parse JSON file."
+	patch_list=$("${JQ}" -r --arg key "$key" ".[$key].patches[]?" "$PATCH_FILE") || {
+		printf "Error: Failed to parse JSON file.\n"
 		exit 1
-	fi
+	}
 
 	# Check if the patch list is empty or null
 	if [ -z "$patch_list" ]; then
@@ -106,19 +104,22 @@ apply_patches() {
 
 	# Apply each patch
 	echo "$patch_list" | while IFS= read -r local_patch; do
-	local_patch=$(echo "$local_patch" | xargs)
-	if [ -f "$TOP_DIR/$local_patch" ]; then
-		echo "Applying local patch: $TOP_DIR/$local_patch"
-		if [ ! -d ".git" ]; then
-			patch -p1 < "$TOP_DIR/$local_patch"
-		else
-			git apply "$TOP_DIR/$local_patch"
+		local_patch=$(echo "$local_patch" | xargs)
+		if [ -f "$TOP_DIR/$local_patch" ]; then
+			printf "Applying local patch: %s\n" "$TOP_DIR/$local_patch"
+			
+			if [ ! -d ".git" ]; then
+				patch -p1 < "$TOP_DIR/$local_patch" || {
+					printf "Error: Failed to apply patch %s.\n" "$TOP_DIR/$local_patch"
+					exit 1
+				}
+			else
+				git apply "$TOP_DIR/$local_patch" || {
+					printf "Error: Failed to apply patch %s.\n" "$TOP_DIR/$local_patch"
+					exit 1
+				}
+			fi
 		fi
-		if [ $? -ne 0 ]; then
-			echo "Error: Failed to apply patch $TOP_DIR/$local_patch."
-			exit 1
-		fi
-	fi
 	done
 }
 
@@ -129,22 +130,23 @@ check_and_set_dir() {
 			echo "TARGET_DIR ($TARGET_DIR) not present. One will be created."
 		fi
 	else
-		TARGET_DIR=`pwd`
+		TARGET_DIR=$(pwd)
 		echo "Current directory is $TARGET_DIR"
 	fi
-	export WORKSPACE=`pwd`
+	WORKSPACE=$(pwd)
+	export WORKSPACE
 	export RZ_TARGET_DIR="${TARGET_DIR}/yocto_rzsbc_board"
 
 }
 
 log_warning(){
 	string=$1
-	echo "\e[33m$string\e[0m\n"
+	printf "\e[33m%s\e[0m\n" "$string"
 }
 
 log_error(){
 	string=$1
-	echo "\e[31m$string \e[0m\n"
+	printf "\e[31m%s\e[0m\n" "$string"
 }
 
 check_pkg_require(){
@@ -152,10 +154,10 @@ check_pkg_require(){
 	check=0
 
 	echo "Checking linux version: "
-	lsb_id=`lsb_release -i | cut -f2`
-	lsb_rel=`lsb_release -r | cut -f2`
+	lsb_id=$(lsb_release -i | cut -f2)
+	lsb_rel=$(lsb_release -r | cut -f2)
 
-	if [ ${lsb_id} != ${LSB_ID_OK} ] || [ ${lsb_rel} != ${LSB_REL_OK} ]; then
+	if [ "${lsb_id}" != ${LSB_ID_OK} ] || [ "${lsb_rel}" != ${LSB_REL_OK} ]; then
 		echo "Only known working OS is ${LSB_OK}. Kindly ensure this script is run on a supported OS or docker container"
 		exit 0
 	fi
@@ -191,7 +193,7 @@ check_patch_require() {
 		echo "Checking patches for repository: $repository_name"
 
 		# Extract patch paths for the current repository
-		patch_list=$("${JQ}" -r --arg repo "$repository_name" '.[$repo].patches[]?' "$PATCH_FILE")
+		patch_list=$("${JQ}" -r --arg repo "$repository_name" ".[$repo].patches[]?" "$PATCH_FILE")
 
 		# Check if each patch file exists
 		for patch_path in $patch_list; do
@@ -206,23 +208,23 @@ check_patch_require() {
 		done
 	done
 
-	echo "All required patches are present.\n"
+	printf "All required patches are present.\n"
 }
 
 # Verify if the bsp layer is correctly checkout
 bsp_checkout_verification() {
 	echo "Checking tag, commit, and branch for each BSP layer"
 
-	cd "${RZ_TARGET_DIR}"
+	cd "${RZ_TARGET_DIR}" || exit 1
 	bsp_layers=$("${JQ}" -r 'keys[]' "$PATCH_FILE")
 
 	for bsp_layer in $bsp_layers; do
-		cd "$bsp_layer"
+		cd "$bsp_layer" || exit 1
 
-		local expected_branch expected_commit expected_tags
-		expected_branch=$("${JQ}" -r --arg repo "$bsp_layer" '.[$repo].branch // empty' "$PATCH_FILE")
-		expected_commit=$("${JQ}" -r --arg repo "$bsp_layer" '.[$repo].commit // empty' "$PATCH_FILE")
-		expected_tags=$("${JQ}" -r --arg repo "$bsp_layer" '.[$repo].tag // empty' "$PATCH_FILE")
+		expected_branch expected_commit expected_tags
+		expected_branch=$("${JQ}" -r --arg repo "$bsp_layer" ".[$repo].branch // empty" "$PATCH_FILE")
+		expected_commit=$("${JQ}" -r --arg repo "$bsp_layer" ".[$repo].commit // empty" "$PATCH_FILE")
+		expected_tags=$("${JQ}" -r --arg repo "$bsp_layer" ".[$repo].tag // empty" "$PATCH_FILE")
 
 		# Check if the directory is a Git repository
 		if [ ! -d ".git" ]; then
@@ -270,10 +272,10 @@ bsp_checkout_verification() {
 				echo "Commit mismatch in $bsp_layer. Expected $expected_commit but found $current_commit."
 				echo "Checking out to $expected_commit"
 				clean_repository
-				git checkout $expected_commit
+				git checkout "$expected_commit"
 
 				# Need to apply the neccessary patches
-				apply_patches $bsp_layer
+				apply_patches "$bsp_layer"
 				cd ..
 				continue
 			fi
@@ -290,10 +292,10 @@ bsp_checkout_verification() {
 				echo "Branch mismatch in $bsp_layer. Expected $expected_branch but found $current_branch."
 				echo "Checking out to $expected_branch"
 				clean_repository
-				git checkout $expected_branch
+				git checkout "$expected_branch"
 
 				# Need to apply the neccessary patches
-				apply_patches $bsp_layer
+				apply_patches "$bsp_layer"
 				cd ..
 				continue
 			fi
@@ -309,7 +311,7 @@ bsp_checkout_verification() {
 
 # Handle missing meta-layer repositories
 check_and_clone_missing_layers() {
-	cd "${RZ_TARGET_DIR}"
+	cd "${RZ_TARGET_DIR}" || exit 1
 
 	missing_layers=""
 	bsp_layers=$("${JQ}" -r 'keys[]' "$PATCH_FILE")
@@ -324,18 +326,18 @@ check_and_clone_missing_layers() {
 
 	# Clone missing meta-layer repositories
 	for missing_layer in $missing_layers; do
-		local repo_url repo_branch repo_commit repo_type
-		repo_url=$("${JQ}" -r --arg repo "$missing_layer" '.[$repo].url // empty' "$PATCH_FILE")
-		repo_branch=$("${JQ}" -r --arg repo "$missing_layer" '.[$repo].branch // empty' "$PATCH_FILE")
-		repo_commit=$("${JQ}" -r --arg repo "$missing_layer" '.[$repo].commit // empty' "$PATCH_FILE")
-		repo_tag=$("${JQ}" -r --arg repo "$missing_layer" '.[$repo].tag // empty' "$PATCH_FILE")
-		repo_type=$("${JQ}" -r --arg repo "$missing_layer" '.[$repo].type // empty' "$PATCH_FILE")
+		repo_url repo_branch repo_commit repo_type
+		repo_url=$("${JQ}" -r --arg repo "$missing_layer" ".[$repo].url // empty" "$PATCH_FILE")
+		repo_branch=$("${JQ}" -r --arg repo "$missing_layer" ".[$repo].branch // empty" "$PATCH_FILE")
+		repo_commit=$("${JQ}" -r --arg repo "$missing_layer" ".[$repo].commit // empty" "$PATCH_FILE")
+		repo_tag=$("${JQ}" -r --arg repo "$missing_layer" ".[$repo].tag // empty" "$PATCH_FILE")
+		repo_type=$("${JQ}" -r --arg repo "$missing_layer" ".[$repo].type // empty" "$PATCH_FILE")
 
 		# If the missing repos is local
 		if [ "$repo_type" = "local" ]; then
 			unpack_gpu
 			unpack_codec
-			cd "${RZ_TARGET_DIR}/$missing_layer"
+			cd "${RZ_TARGET_DIR}/$missing_layer" || exit 1
 		elif [ "$repo_type" = "git" ]; then
 			if [ -z "$repo_url" ] || [ "$repo_url" = "null" ]; then
 				log_error "Error: No URL specified for $missing_layer. Cannot clone repository. Please verify the 'url' key in $PATCH_FILE."
@@ -348,7 +350,7 @@ check_and_clone_missing_layers() {
 				exit 1
 			}
 
-			cd "${missing_layer}"
+			cd "${missing_layer}" || exit 1
 
 			# Checkout tag, commit or branch if specified
 			if [ -n "$repo_tag" ]; then
@@ -366,19 +368,19 @@ check_and_clone_missing_layers() {
 		fi
 
 		# Apply necessary patches
-		apply_patches $missing_layer
+		apply_patches "$missing_layer"
 		cd ..
 	done
 
-	echo "All required repositories now exist.\n"
+	printf "All required repositories now exist.\n"
 	return 0
 }
 
 # Function to clone a repository with a specific branch or tag and retry on failure
 clone_repo_with_retries() {
-	local url="$1"         # Repository URL
-	local max_retries=5    # Maximum number of retries
-	local attempt=1        # Initialize attempt count
+	url="$1"         # Repository URL
+	max_retries=5    # Maximum number of retries
+	attempt=1        # Initialize attempt count
 
 	# Loop for retry attempts
 	while [ $attempt -le $max_retries ]; do
@@ -411,40 +413,40 @@ clone_repo_with_retries() {
 }
 
 extract_to_meta(){
-	local zipfile=$1
-	local tarfile=$2
-	local tardir=$3
+	zipfile=$1
+	tarfile=$2
+	tardir=$3
 
-	cd ${WORKSPACE}
+	cd "${WORKSPACE}" || exit 1
 	pwd
-	unzip ${zipfile}
-	tar -xzf ${tarfile} -C ${tardir}
+	unzip "${zipfile}"
+	tar -xzf "${tarfile}" -C "${tardir}"
 	sync
 }
 
 unpack_bsp(){
-	local pkg_file=${WORKSPACE}/${REN_LINUX_BSP_PKG}${SUFFIX_ZIP}
-	local zip_dir=${REN_LINUX_BSP_PKG}
+	pkg_file=${WORKSPACE}/${REN_LINUX_BSP_PKG}${SUFFIX_ZIP}
+	zip_dir=${REN_LINUX_BSP_PKG}
 
-	local bsp=${REN_LINUX_BSP_META}${SUFFIX_TAR}
+	bsp=${REN_LINUX_BSP_META}${SUFFIX_TAR}
 
-	extract_to_meta ${pkg_file} "${zip_dir}/${bsp}" ${RZ_TARGET_DIR}
+	extract_to_meta "${pkg_file}" "${zip_dir}/${bsp}" "${RZ_TARGET_DIR}"
 	rm -fr ${zip_dir}
 }
 
 get_bsp() {
-	cd "${RZ_TARGET_DIR}"
+	cd "${RZ_TARGET_DIR}" || exit 1
 
 	repo_names=$("${JQ}" -r 'keys[]' "$PATCH_FILE")
 
 	# Clone and set up each repository
 	for repo_name in $repo_names; do
-		local repo_url repo_branch repo_commit repo_type
-		repo_url=$("${JQ}" -r --arg repo "$repo_name" '.[$repo].url // empty' "$PATCH_FILE")
-		repo_branch=$("${JQ}" -r --arg repo "$repo_name" '.[$repo].branch // empty' "$PATCH_FILE")
-		repo_commit=$("${JQ}" -r --arg repo "$repo_name" '.[$repo].commit // empty' "$PATCH_FILE")
-		repo_tag=$("${JQ}" -r --arg repo "$repo_name" '.[$repo].tag // empty' "$PATCH_FILE")
-		repo_type=$("${JQ}" -r --arg repo "$repo_name" '.[$repo].type // empty' "$PATCH_FILE")
+		repo_url repo_branch repo_commit repo_type
+		repo_url=$("${JQ}" -r --arg repo "$repo_name" ".[$repo].url // empty" "$PATCH_FILE")
+		repo_branch=$("${JQ}" -r --arg repo "$repo_name" ".[$repo].branch // empty" "$PATCH_FILE")
+		repo_commit=$("${JQ}" -r --arg repo "$repo_name" ".[$repo].commit // empty" "$PATCH_FILE")
+		repo_tag=$("${JQ}" -r --arg repo "$repo_name" ".[$repo].tag // empty" "$PATCH_FILE")
+		repo_type=$("${JQ}" -r --arg repo "$repo_name" ".[$repo].type // empty" "$PATCH_FILE")
 
 		# Only clone the git repositories
 		if [ "$repo_type" = "local" ]; then
@@ -460,7 +462,7 @@ get_bsp() {
 		echo "Cloning and setting up $repo_name from $url"
 
 		clone_repo_with_retries "$repo_url"
-		cd "$repo_name"
+		cd "$repo_name" || exit 1
 
 		# Checkout tag, commit or branch if specified
 		if [ -n "$repo_tag" ]; then
@@ -482,22 +484,22 @@ get_bsp() {
 }
 
 unpack_gpu() {
-	local pkg_file=${WORKSPACE}/${REN_GPU_MALI_LIB_PKG}${SUFFIX_ZIP}
-	local zip_dir=${REN_GPU_MALI_LIB_PKG}
+	pkg_file=${WORKSPACE}/${REN_GPU_MALI_LIB_PKG}${SUFFIX_ZIP}
+	zip_dir=${REN_GPU_MALI_LIB_PKG}
 
-	local gpu=${REN_GPU_MALI_LIB_META_FEATURE}${SUFFIX_TAR}
+	gpu=${REN_GPU_MALI_LIB_META_FEATURE}${SUFFIX_TAR}
 
-	extract_to_meta ${pkg_file} "${zip_dir}/${gpu}" ${RZ_TARGET_DIR}
+	extract_to_meta "${pkg_file}" "${zip_dir}/${gpu}" "${RZ_TARGET_DIR}"
 	rm -fr ${zip_dir}
 }
 
 unpack_codec() {
-	local pkg_file=${WORKSPACE}/${REN_VEDIO_CODEC_LIB_PKG}${SUFFIX_ZIP}
-	local zip_dir=${REN_VEDIO_CODEC_LIB_PKG}
+	pkg_file=${WORKSPACE}/${REN_VEDIO_CODEC_LIB_PKG}${SUFFIX_ZIP}
+	zip_dir=${REN_VEDIO_CODEC_LIB_PKG}
 
-	local codec=${REN_VEDIO_CODEC_LIB_META_FEATURE}${SUFFIX_TAR}
+	codec=${REN_VEDIO_CODEC_LIB_META_FEATURE}${SUFFIX_TAR}
 
-	extract_to_meta ${pkg_file} "${zip_dir}/${codec}" ${RZ_TARGET_DIR}
+	extract_to_meta "${pkg_file}" "${zip_dir}/${codec}" "${RZ_TARGET_DIR}"
 	rm -fr ${zip_dir}
 }
 
@@ -513,7 +515,15 @@ setup_conf(){
 	#bitbake core-image-qt
 
 	# New style
-	TEMPLATECONF=$PWD/meta-renesas/meta-rzg2l/docs/template/conf/rzpi . ./poky/oe-init-build-env build
+	TEMPLATECONF=$PWD/meta-renesas/meta-rzg2l/docs/template/conf/rzpi
+	export TEMPLATECONF
+
+	# Check file's existance
+	if [ -f "./poky/oe-init-build-env" ]; then
+		./poky/oe-init-build-env build
+	else
+		echo "File ./poky/oe-init-build-env does not exist."
+	fi
 
 	# Remove templateconf.cfg as it will reference the old workspace directory when installing the eSDK on another host PC
 	rm -f "conf/templateconf.cfg"
@@ -526,7 +536,7 @@ setup_conf(){
 		echo "This build is a common build for rzsbc. It is not based on any release tag. Target image: ${IMAGE}"
 	else
 		# Copy local overrides file to yocto build conf folder
-		cp ${WORKSPACE}/site.conf conf/site.conf
+		cp "${WORKSPACE}"/site.conf conf/site.conf
 		# Read and store revision from site.conf
 		site_file="conf/site.conf"
 		revision_value=$(grep '^SRCREV_pn-linux-renesas =' "$site_file" | cut -d '=' -f2)
@@ -540,7 +550,7 @@ setup_conf(){
 # Main setup
 setup() {
 	# Check and note down directory locations
-	check_and_set_dir $1
+	check_and_set_dir "$1"
 
 	log_warning "WARNING: The script will check tags first, then commits, and finally branches if all three are specified. \
 	It will check out to the specified tag, commit, or branch as needed."
@@ -548,9 +558,9 @@ setup() {
 	check_patch_require
 
 	# if targe directory is not present, we have to create and unpack the contents.
-	if [ ! -d ${RZ_TARGET_DIR} ];then
+	if [ ! -d "${RZ_TARGET_DIR}" ];then
 		check_pkg_require
-		mkdir -p ${RZ_TARGET_DIR}
+		mkdir -p "${RZ_TARGET_DIR}"
 		#unpack_bsp
 		get_bsp
 		unpack_gpu
@@ -563,7 +573,7 @@ setup() {
 	bsp_checkout_verification
 
 	echo "Target contents in ${RZ_TARGET_DIR}:"
-	(ls ${RZ_TARGET_DIR})
+	(ls "${RZ_TARGET_DIR}")
 	echo ""
 	echo "Finished preparing the rz yocto build source repository for RZ SBC board"
 	echo "========================================================================="
@@ -571,7 +581,7 @@ setup() {
 
 # Main build-sdk
 build_sdk() {
-	setup $1
+	setup "$1"
 
 	setup_conf
 
@@ -593,7 +603,7 @@ build_sdk() {
 
 # Main build
 build() {
-	setup $1
+	setup "$1"
 
 	setup_conf
 
@@ -609,11 +619,11 @@ build() {
 }
 
 deploy_build_assets() {
-	local target_dir="${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/host/src"
+	target_dir="${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/host/src"
 
 	# Check if the src directory already exists
-	if [ ! -d ${target_dir} ];then
-		mkdir -p ${target_dir}
+	if [ ! -d "${target_dir}" ];then
+		mkdir -p "${target_dir}"
 	fi
 
 	# Copy build assets to the src directory
@@ -631,24 +641,24 @@ deploy_build_assets() {
 output() {
 	export OUTPUT=${WORKSPACE}/output
 
-	if [ ! -d ${OUTPUT} ];then
-		mkdir -p ${OUTPUT}
+	if [ ! -d "${OUTPUT}" ];then
+		mkdir -p "${OUTPUT}"
 	fi
 
 	# Collect final output
-	cd ${OUTPUT}
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/fip-rzpi.srec $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/rzpi.dtb $OUTPUT
-	cp -r ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/overlays $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/readme.txt $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/uEnv.txt $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/Image $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/bl2_bp-rzpi.srec $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/Flash_Writer_SCIF_rzpi.mot $OUTPUT
-	cp ${RZ_TARGET_DIR}/build/tmp/deploy/images/rzpi/core-image-qt-rzpi.tar.bz2 $OUTPUT
+	cd "${OUTPUT}" || exit 1
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/fip-rzpi.srec "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/rzpi.dtb "$OUTPUT"
+	cp -r "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/overlays "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/readme.txt "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/uEnv.txt "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/Image "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/bl2_bp-rzpi.srec "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/Flash_Writer_SCIF_rzpi.mot "$OUTPUT"
+	cp "${RZ_TARGET_DIR}"/build/tmp/deploy/images/rzpi/core-image-qt-rzpi.tar.bz2 "$OUTPUT"
 
 	echo "The output located at: $OUTPUT"
-	ls -la $OUTPUT
+	ls -la "$OUTPUT"
 	echo
 	echo "Finished collecting the rz yocto output for RZ SBC board"
 	echo "======================================================================"
