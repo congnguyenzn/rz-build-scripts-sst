@@ -148,18 +148,18 @@ function package_rootfs() {
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
     # Check folder rootfs exist
-    if [[ ! -d "rootfs" ]]; then
+    if [[ ! -d "${OUTPUT_ROOTFS}" ]]; then
         echo "Directory rootfs not found"
         return 1
     fi
 
     # Check and remove old rootfs file if exist
-    if [[ -e "rootfs.tar.bz2" ]]; then
-        rm rootfs.tar.bz2
+    if [[ -e "${OUTPUT_ROOTFS}.tar.bz2" ]]; then
+        rm "${OUTPUT_ROOTFS}.tar.bz2"
     fi
 
     # Create file tar.bz2 from folder rootfs and check error
-    sudo tar -cvjf rootfs.tar.bz2 rootfs/ || { echo "Failed to package rootfs into rootfs.tar.bz2"; return 1; }
+    sudo tar -cvjf "${OUTPUT_ROOTFS}.tar.bz2" -C rootfs/ . || { echo "Failed to package rootfs into rootfs.tar.bz2"; return 1; }
 
     echo "package_rootfs completed successfully."
     return 0

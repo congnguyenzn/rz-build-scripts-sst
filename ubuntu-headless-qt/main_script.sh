@@ -129,9 +129,9 @@ function main_ubuntu_core(){
     fi
 
     # Move WIC output to output yocto folder
-    move_wic_to_yocto_output
+    move_ubuntu_to_yocto_output
     if [[ $? -eq 1 ]]; then
-        echo "move_wic_to_yocto_output failed."
+        echo "move_ubuntu_to_yocto_output failed."
         exit 1
     fi
 }

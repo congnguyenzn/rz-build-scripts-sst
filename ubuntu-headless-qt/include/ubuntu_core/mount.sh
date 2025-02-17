@@ -168,19 +168,19 @@ function package_rootfs() {
     echo "Current working directory is: $WORK_DIR"
     cd "$WORK_DIR" || { echo "Failed to change to WORK_DIR"; return 1; }
 
+    OUTPUT_ROOTFS="${OUTPUT_ROOTFS:=rootfs}"
     # Check folder rootfs exist
-    if [[ ! -d "rootfs" ]]; then
+    if [[ ! -d "${OUTPUT_ROOTFS}" ]]; then
         echo "Directory rootfs not found"
         return 1
     fi
-    OUTPUT_ROOTFS="${OUTPUT_ROOTFS:=rootfs}"
     # Check and remove old rootfs file if exist
     if [[ -e "$OUTPUT_ROOTFS.tar.zst" ]]; then
         rm "$OUTPUT_ROOTFS".tar.zst
     fi
 
     # Create file tar.zst from folder rootfs and check error
-    sudo tar -I zstd -cvf "$OUTPUT_ROOTFS".tar.zst -C rootfs . || { echo "Failed to package rootfs into $OUTPUT_ROOTFS.tar.zst"; return 1; }
+    sudo tar -I zstd -cvf "$OUTPUT_ROOTFS".tar.zst -C rootfs . || { echo "Failed to package rootfs into ${OUTPUT_ROOTFS}.tar.zst"; return 1; }
 
     echo "package_rootfs completed successfully."
     return 0
