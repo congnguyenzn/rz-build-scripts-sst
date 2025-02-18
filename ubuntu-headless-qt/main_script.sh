@@ -274,6 +274,12 @@ main_ubuntu_lxde(){
         exit 1
     fi
 
+    # Move WIC output to output yocto folder
+    move_ubuntu_to_yocto_output
+    if [ $? -eq 1 ]; then
+        echo "move_ubuntu_to_yocto_output failed."
+        exit 1
+    fi
 }
 
 # Set the default build type to Ubuntu Core
