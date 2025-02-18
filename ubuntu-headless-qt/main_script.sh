@@ -246,6 +246,19 @@ main_ubuntu_lxde(){
         exit 1
     fi
 
+    # Install blueman for bluetooth (on 20.04 and above)
+    # Get the ubuntu version
+    version=$(echo "$UBUNTU_BASE_FILE_NAME" | grep -oP '\d+\.\d+')
+    major_version=$(echo "$version" | cut -d '.' -f 1)
+
+    if [ "$major_version" -ge 20 ]; then
+        chroot_run_1_script "apt_blueman.sh"
+    fi
+    if [ $? -eq 1 ]; then
+        echo "apt_blueman failed."
+        exit 1
+    fi
+
     # Install audio and video packages
     chroot_run_1_script "apt_audio_video.sh"
     if [ $? -eq 1 ]; then

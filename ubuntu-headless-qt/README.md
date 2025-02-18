@@ -48,6 +48,23 @@ Then we can execute the script as follows:
 chmod +x main_script.sh
 sudo ./main_script.sh
 ```
+
+**Explanation workflow of the main script:**
+- **Running the Script**:
+This command executes the script main_script.sh with superuser (root) privileges, thanks to the sudo command.
+
+- **Environment Configuration**:
+Inside main_script.sh, the script reads the environment settings from a file named config.ini. This configuration file likely contains parameters that specify the type of Ubuntu system to be built.
+
+- **Sub-shell Execution**:
+The script then launches a sub-shell under the current user’s privileges. This means that any processes started in this sub-shell will run with the permissions of the user who invoked the script, not as the root user.
+
+- **Building Yocto**:
+Within this sub-shell, the script proceeds to build the Yocto project. Yocto is a project that helps developers create custom Linux distributions, and this step involves compiling the necessary components based on the configurations specified earlier.
+
+- **Executing Remaining Build as Root**:
+After the Yocto build process is complete, the script uses root privileges (via sudo) to perform any remaining tasks in the Ubuntu build process. This ensures that any actions requiring elevated permissions can be executed without interruption.
+
 Here are the packages preinstalled after running the script:
 
 | **Category**                     | **Package(s)**                                                                |
