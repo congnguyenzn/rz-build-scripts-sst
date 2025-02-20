@@ -147,34 +147,6 @@ main_ubuntu_core(){
 #   None
 #######################################
 main_ubuntu_lxde(){
-    MAIN_USER=$(sudo grep 'sudo: .*main_script.sh' /var/log/auth.log | tail -n 1 | awk '{print $6}')
-    # Recheck user for yocto build
-    if [ -n "$MAIN_USER" ]; then
-        echo "User executed sudo ./main_script is: $MAIN_USER"
-    else
-        echo "It seem that you are root. Recheck..."
-        MAIN_USER=$(stat -c '%U' main_script.sh)
-        if [ -n "$MAIN_USER" ]; then
-            echo "User executed sudo ./main_script is: $MAIN_USER"
-        else
-            echo "It seem that you are root. Please login and clone as a user"
-            exit 1
-        fi
-    fi
-
-    if [ "$MAIN_USER" = "root" ]; then
-        echo "Error: Current user cannot be root, we cannot build yocto with root's privilege."
-        exit 1
-    fi
-
-    ######## YOCTO WORKING ########
-    build_yocto
-    if [ $? -eq 1 ]; then
-        echo "build_yocto failed."
-        exit 1
-    fi
-    ##### END YOCTO WORKING ######
-
     # Install qemu-user-static
     install_qemu
     if [ $? -eq 1 ]; then

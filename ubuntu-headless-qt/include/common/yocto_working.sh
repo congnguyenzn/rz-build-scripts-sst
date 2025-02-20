@@ -6,7 +6,7 @@
 # This function help main script can build yocto
 build_yocto() {
     # Get source yocto
-    su -c "bash -c 'source include/common/yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'" "$MAIN_USER"
+    bash -c 'source include/common/yocto_source.sh; mkdir yocto_rzsbc_board ; cd yocto_rzsbc_board ; get_bsp'
 
     # rename to meta-renesas
     if [ -d "yocto_rzsbc_board/meta-renesas-sst" ]; then
@@ -30,8 +30,8 @@ build_yocto() {
     # Loop until we find the output file
     while [ -z "$result" ]; do
         # Run bitbake
-        su -c "bash -c 'source include/common/yocto_source.sh; cd yocto_rzsbc_board ; setup_conf; \
-        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'" "$MAIN_USER"
+        bash -c 'source include/common/yocto_source.sh; cd yocto_rzsbc_board ; setup_conf;
+        MACHINE=rzpi DISTRO=ubuntu-tiny bitbake renesas-ubuntu'
 
         # Check the output
         result=$(find yocto_rzsbc_board/build/tmp/deploy/ -name '*.tar.bz2' -exec cp {} ./core-image-qt-rzpi.tar.bz2 \; && echo "File copied successfully.")
@@ -60,3 +60,4 @@ move_ubuntu_to_yocto_output(){
         mv "$OUTPUT_ROOTFS"* $DIR_ROOTFS
     fi
 }
+
