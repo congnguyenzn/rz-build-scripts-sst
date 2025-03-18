@@ -523,11 +523,11 @@ setup_conf(){
 	echo "Env setup completed. pwd = ${PWD}"
 
 	# Legacy style
-	#cp ../meta-renesas/docs/template/conf/rzpi/* conf/
+	#cp ../meta-renesas-sst/docs/template/conf/rzpi/* conf/
 	#bitbake core-image-qt
 
 	# New style
-	TEMPLATECONF=$PWD/meta-renesas/meta-rzg2l/docs/template/conf/rzpi . ./poky/oe-init-build-env build
+	TEMPLATECONF=$PWD/meta-renesas-sst/meta-rzg2l/docs/template/conf/rzpi . ./poky/oe-init-build-env build
 
 	# Remove templateconf.cfg as it will reference the old workspace directory when installing the eSDK on another host PC
 	rm -f "conf/templateconf.cfg"
@@ -536,7 +536,7 @@ setup_conf(){
 	if [ ! -e "$WORKSPACE/site.conf" ]; then
 		echo "Local site.conf file not present in this workspace ($WORKSPACE). Assuming developer default build!"
 		# Copy default template overrides file as yocto doesnt copy site.conf.sample
-		cp ../meta-renesas/meta-rzg2l/docs/template/conf/rzpi/site.conf.sample conf/site.conf
+		cp ../meta-renesas-sst/meta-rzg2l/docs/template/conf/rzpi/site.conf.sample conf/site.conf
 		echo "This build is a common build for rzsbc. It is not based on any release tag. Target image: ${IMAGE}"
 	else
 		# Copy local overrides file to yocto build conf folder
